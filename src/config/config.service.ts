@@ -15,10 +15,7 @@ export class ConfigService {
   }
 
   getMongodbUri(): string {
-    return this.configService.get<string>(
-      'MONGODB_URI',
-      'mongodb://localhost:27017/music-booking-api',
-    );
+    return this.configService.get<string>('MONGODB_URI');
   }
 
   // Get JWT configuration
