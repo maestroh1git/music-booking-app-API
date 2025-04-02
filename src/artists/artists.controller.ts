@@ -21,35 +21,32 @@ import { ArtistStatus } from './schemas/artist.schema';
 import { ParseMongoIdPipe } from '../common/pipes/parse-mongo-id.pipe';
 
 @Controller('api/artists')
+@UseGuards(JwtAuthGuard)
 export class ArtistsController {
   constructor(private readonly artistsService: ArtistsService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard)
   create(@Body() createArtistDto: CreateArtistDto, @Request() req) {
     return this.artistsService.create(createArtistDto, req.user._id);
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
   findAll(@Query() query) {
     return this.artistsService.findAll(query);
   }
 
   @Get('me')
-  @UseGuards(JwtAuthGuard)
   findMyProfile(@Request() req) {
     return this.artistsService.findByUserId(req.user._id);
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
   findOne(@Param('id', new ParseMongoIdPipe()) id: string) {
     return this.artistsService.findOne(id);
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   update(
     @Param('id', new ParseMongoIdPipe()) id: string,
     @Body() updateArtistDto: UpdateArtistDto,
@@ -59,7 +56,7 @@ export class ArtistsController {
   }
 
   @Patch(':id/status')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
   updateStatus(
     @Param('id', new ParseMongoIdPipe()) id: string,
@@ -69,7 +66,6 @@ export class ArtistsController {
   }
 
   @Patch(':id/availability')
-  @UseGuards(JwtAuthGuard)
   updateAvailability(
     @Param('id', new ParseMongoIdPipe()) id: string,
     @Body() availabilityUpdates: { date: Date; isAvailable: boolean }[],
@@ -83,13 +79,12 @@ export class ArtistsController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
   remove(@Param('id', new ParseMongoIdPipe()) id: string, @Request() req) {
     return this.artistsService.remove(id, req.user);
   }
 
   @Get('status/pending')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
   findPendingProfiles() {
     return this.artistsService.findAll({ status: ArtistStatus.PENDING_REVIEW });

@@ -25,11 +25,12 @@ import {
 import { ParseMongoIdPipe } from 'src/common/pipes/parse-mongo-id.pipe';
 
 @Controller('api/events')
+@UseGuards(JwtAuthGuard)
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles(UserRole.ORGANIZER, UserRole.ADMIN)
   create(@Body() createEventDto: CreateEventDto, @Request() req) {
     return this.eventsService.create(createEventDto, req.user._id);
@@ -41,7 +42,7 @@ export class EventsController {
   }
 
   @Get('my-events')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles(UserRole.ORGANIZER, UserRole.ADMIN)
   findMyEvents(@Request() req) {
     return this.eventsService.findByOrganizer(req.user._id);
@@ -53,7 +54,6 @@ export class EventsController {
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
   update(
     @Param('id', new ParseMongoIdPipe()) id: string,
     @Body() updateEventDto: UpdateEventDto,
@@ -63,7 +63,6 @@ export class EventsController {
   }
 
   @Patch(':id/status')
-  @UseGuards(JwtAuthGuard)
   updateStatus(
     @Param('id', new ParseMongoIdPipe()) id: string,
     @Body('status') status: EventStatus,
@@ -73,7 +72,6 @@ export class EventsController {
   }
 
   @Post(':id/artist-slots')
-  @UseGuards(JwtAuthGuard)
   addArtistSlot(
     @Param('id', new ParseMongoIdPipe()) id: string,
     @Body()
@@ -84,7 +82,6 @@ export class EventsController {
   }
 
   @Post(':id/artist-slots/batch')
-  @UseGuards(JwtAuthGuard)
   addArtistSlots(
     @Param('id', new ParseMongoIdPipe()) id: string,
     @Body()
@@ -99,7 +96,6 @@ export class EventsController {
   }
 
   @Patch(':id/artist-slots/:slotIndex')
-  @UseGuards(JwtAuthGuard)
   updateArtistSlot(
     @Param('id', new ParseMongoIdPipe()) id: string,
     @Param('slotIndex') slotIndex: number,
@@ -110,7 +106,6 @@ export class EventsController {
   }
 
   @Delete(':id/artist-slots/:slotIndex')
-  @UseGuards(JwtAuthGuard)
   removeArtistSlot(
     @Param('id', new ParseMongoIdPipe()) id: string,
     @Param('slotIndex') slotIndex: number,
@@ -120,7 +115,6 @@ export class EventsController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
   remove(@Param('id', new ParseMongoIdPipe()) id: string, @Request() req) {
     return this.eventsService.remove(id, req.user);
   }
