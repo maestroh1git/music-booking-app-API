@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
@@ -14,6 +14,7 @@ import { UploadsModule } from './uploads/uploads.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { ConfigModule, ConfigService } from './config/config.module';
+import { LoggerMiddleware } from './common/logger/logger.middleware';
 
 @Module({
   imports: [
@@ -59,4 +60,9 @@ import { ConfigModule, ConfigService } from './config/config.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    // Apply LoggerMiddleware globally for all routes
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}
