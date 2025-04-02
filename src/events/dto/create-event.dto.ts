@@ -1,6 +1,7 @@
 import {
   IsDate,
   IsEnum,
+  IsMongoId,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -17,6 +18,7 @@ import {
 export class ArtistSlotDto {
   @IsString()
   @IsOptional()
+  @IsMongoId()
   artist?: string;
 
   @IsString()

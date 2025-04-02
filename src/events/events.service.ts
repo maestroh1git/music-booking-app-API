@@ -6,7 +6,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import {
   Event,
   EventDocument,
@@ -18,6 +18,7 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { UserRole } from '../users/schemas/user.schema';
 import { ArtistsService } from '../artists/artists.service';
+import { ArtistDocument } from '../artists/schemas/artist.schema';
 
 @Injectable()
 export class EventsService {
@@ -99,6 +100,27 @@ export class EventsService {
     }
   }
 
+  // Helper method to check for duplicate artists
+  private hasDuplicateArtist(
+    event: EventDocument,
+    newArtistId: string,
+    excludeSlotIndex?: number,
+  ): boolean {
+    const currentSlots = [...event.artistSlots];
+    if (excludeSlotIndex !== undefined) {
+      currentSlots.splice(excludeSlotIndex, 1);
+    }
+
+    return currentSlots.some((slot) => {
+      if (!slot.artist) return false;
+      const slotArtistId =
+        typeof slot.artist === 'string'
+          ? slot.artist
+          : (slot.artist as ArtistDocument)._id.toString();
+      return slotArtistId === newArtistId;
+    });
+  }
+
   async create(createEventDto: CreateEventDto, userId: string): Promise<Event> {
     // Validate event date is in the future
     if (new Date(createEventDto.date) <= new Date()) {
@@ -139,7 +161,7 @@ export class EventsService {
 
   async findAll(query: any = {}): Promise<Event[]> {
     return this.eventModel
-      .find({ status: EventStatus.PUBLISHED, ...query })
+      .find({ ...query })
       .populate('organizer', 'name email')
       .populate('artistSlots.artist')
       .exec();
@@ -260,6 +282,20 @@ export class EventsService {
       if (!artist) {
         throw new NotFoundException(
           `Artist with ID ${artistSlot.artist} not found`,
+        );
+      }
+
+      //validate artist status is active
+      if (artist.status !== 'active') {
+        throw new BadRequestException(
+          `Artist with ID ${artist._id} is not active`,
+        );
+      }
+
+      // Check for duplicate artists
+      if (this.hasDuplicateArtist(event, artistSlot.artist)) {
+        throw new BadRequestException(
+          `Artist with ID ${artistSlot.artist} is already assigned to this event`,
         );
       }
 
@@ -445,6 +481,35 @@ export class EventsService {
       throw new ForbiddenException('You can only update your own events');
     }
 
+    // Validate all artist IDs are valid MongoDB ObjectIds
+    for (const slot of artistSlots) {
+      if (slot.artist && !Types.ObjectId.isValid(slot.artist)) {
+        throw new BadRequestException(
+          `Invalid artist ID format: ${slot.artist}. Artist ID must be a valid MongoDB ObjectId.`,
+        );
+      }
+    }
+
+    // Check for duplicate artists within the new slots
+    const newArtistIds = artistSlots
+      .filter((slot) => slot.artist)
+      .map((slot) => slot.artist);
+    const uniqueNewArtistIds = new Set(newArtistIds);
+    if (newArtistIds.length !== uniqueNewArtistIds.size) {
+      throw new BadRequestException(
+        'Duplicate artists found in the provided slots',
+      );
+    }
+
+    // Check for duplicate artists with existing slots
+    for (const slot of artistSlots) {
+      if (slot.artist && this.hasDuplicateArtist(event, slot.artist)) {
+        throw new BadRequestException(
+          `Artist with ID ${slot.artist} is already assigned to this event`,
+        );
+      }
+    }
+
     // Validate all artists exist
     for (const slot of artistSlots) {
       if (slot.artist) {
@@ -452,6 +517,13 @@ export class EventsService {
         if (!artist) {
           throw new NotFoundException(
             `Artist with ID ${slot.artist} not found`,
+          );
+        }
+
+        //validate artist status is active
+        if (artist.status !== 'active') {
+          throw new BadRequestException(
+            `Artist with ID ${slot.artist} is not active`,
           );
         }
       }
