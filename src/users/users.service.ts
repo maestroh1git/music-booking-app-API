@@ -9,6 +9,11 @@ export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
   async create(createUserDto: CreateUserDto): Promise<UserDocument> {
+    //check if user already exists
+    const user = await this.findByEmail(createUserDto.email);
+    if (user) {
+      throw new NotFoundException('User already exists');
+    }
     const createdUser = new this.userModel(createUserDto);
     return createdUser.save();
   }
