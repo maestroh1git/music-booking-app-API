@@ -14,6 +14,13 @@ export class ConfigService {
     return this.configService.get<number>('DATABASE_PORT');
   }
 
+  getMongodbUri(): string {
+    return this.configService.get<string>(
+      'MONGODB_URI',
+      'mongodb://localhost:27017/music-booking-api',
+    );
+  }
+
   // Get JWT configuration
   getJwtSecret(): string {
     return this.configService.get<string>('JWT_SECRET');

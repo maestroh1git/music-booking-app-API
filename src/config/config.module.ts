@@ -21,3 +21,4 @@ import { ConfigService } from './config.service';
   exports: [ConfigService], // Export ConfigService for use in other modules
 })
 export class ConfigModule {}
+export { ConfigService };
