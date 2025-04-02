@@ -1,73 +1,116 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Music Booking App API - Industry Hub
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A robust and scalable REST API for a Music Booking Application, built with NestJS and TypeScript. This API enables users to book artists for events, manage artist profiles, and handle event listings.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🎯 Features
 
-## Description
+- **Authentication & Authorization**
+  - Secure user authentication
+  - Role-based access control
+  - JWT token management
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- **Artist Management**
+  - Artist profile creation and management
+  - Portfolio management
+  - Availability tracking
 
-## Installation
+- **Event Management**
+  - Event creation and listing
+  - Event details and scheduling
+  - Event status tracking
 
-```bash
-$ npm install
+- **Booking System**
+  - Secure booking transactions
+  - Booking status management
+  - Payment integration
+
+- **Additional Features**
+TODO
+  - File uploads for media content
+  - Review and rating system
+  - Analytics tracking
+  - Notification system
+
+## 🛠️ Tech Stack
+
+- **Framework**: NestJS
+- **Language**: TypeScript
+- **Database**: MongoDB with Mongoose
+- **Authentication**: JWT
+TODO
+- **File Storage**: Local/Cloud storage
+- **API Documentation**: Swagger/OpenAPI
+
+## 📁 Project Structure
+
+```
+src/
+├── auth/           # Authentication module
+├── artists/        # Artist management
+├── bookings/       # Booking system
+├── events/         # Event management
+├── users/          # User management
+├── common/         # Shared utilities
+├── config/         # Configuration
+TODO
+├── uploads/        # File upload handling
+├── reviews/        # Review system
+├── notifications/  # Notification system
+└── analytics/      # Analytics tracking
 ```
 
-## Running the app
+## 🚀 Getting Started
 
+### Prerequisites
+
+- Node.js (v14 or higher)
+- MongoDB
+- npm or yarn
+
+### Installation
+
+1. Clone the repository:
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+git clone [https://github.com/maestroh1git/music-booking-app-API.git]
+cd music-booking-app-API
 ```
 
-## Test
-
+2. Install dependencies:
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm install
 ```
 
-## Support
+3. Set up environment variables:
+```bash
+cp .env.example .env
+# Edit .env with your configuration
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+4. Start the development server:
+```bash
+npm run start:dev
+```
 
-## Stay in touch
+## 📚 API Documentation
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+The API documentation is available at [Postman Link](https://planetary-space-650600.postman.co/workspace/Gambl~dfc9281d-0434-4abb-a1a5-b32f87177b57/collection/40703321-0c5173da-2867-48f5-bf30-f4955fad3ecb?action=share&creator=40703321&active-environment=40703321-40550016-6df8-43a8-ac9e-e258771be588). It includes:
+- Endpoint descriptions
+- Request/response schemas
+- Authentication requirements
+- Example requests
 
-## License
+## 🔒 Security Features
 
-Nest is [MIT licensed](LICENSE).
+- JWT-based authentication
+- Password hashing
+- Role-based access control
+- Input validation with whitelist and transform options
+- Basic NestJS security features
+
+## 📦 Deployment
+
+The application can be deployed using:
+```bash
+npm run build
+npm run start:prod
+```
