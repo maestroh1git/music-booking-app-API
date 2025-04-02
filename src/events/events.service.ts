@@ -4,6 +4,8 @@ import {
   NotFoundException,
   ForbiddenException,
   BadRequestException,
+  forwardRef,
+  Inject,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -19,12 +21,15 @@ import { UpdateEventDto } from './dto/update-event.dto';
 import { UserRole } from '../users/schemas/user.schema';
 import { ArtistsService } from '../artists/artists.service';
 import { ArtistDocument } from '../artists/schemas/artist.schema';
+import { BookingStatus } from 'src/bookings/schemas/booking.schema';
+import { BookingsService } from 'src/bookings/bookings.service';
 
 @Injectable()
 export class EventsService {
   constructor(
     @InjectModel(Event.name) private eventModel: Model<EventDocument>,
     private artistsService: ArtistsService,
+    @Inject(forwardRef(() => BookingsService)) private bookingsService: BookingsService,
   ) {}
 
   // Helper method to validate budget constraints
@@ -306,7 +311,31 @@ export class EventsService {
     // Add the artist slot
     event.artistSlots.push(artistSlot);
 
-    return event.save();
+    const updatedEvent = await event.save();
+
+    // If artist is assigned, create a booking request
+    if (artistSlot.artist) {
+      try {
+        // Create a booking request
+        await this.bookingsService.create(
+          {
+            artist: artistSlot.artist,
+            event: id,
+            status: BookingStatus.REQUESTED,
+            notes: `Booking request for ${artistSlot.role} role in event: ${event.title}`,
+          },
+          currentUser,
+        );
+      } catch (error) {
+        // If booking creation fails, remove the artist from the slot
+        const slotIndex = updatedEvent.artistSlots.length - 1;
+        updatedEvent.artistSlots.splice(slotIndex, 1);
+        await updatedEvent.save();
+        throw error;
+      }
+    }
+
+    return updatedEvent;
   }
 
   async updateArtistSlot(
@@ -345,6 +374,9 @@ export class EventsService {
       await this.validateBudgetConstraints(event, update.artist, slotIndex);
     }
 
+    // Store the previous artist if there was one
+    const previousArtist = event.artistSlots[slotIndex].artist;
+
     // Update the slot
     if (update.artist) {
       event.artistSlots[slotIndex].artist = update.artist as any;
@@ -354,7 +386,33 @@ export class EventsService {
       event.artistSlots[slotIndex].status = update.status;
     }
 
-    return event.save();
+    const updatedEvent = await event.save();
+
+    // If artist is assigned or changed, create a booking request
+    if (
+      update.artist &&
+      (!previousArtist || previousArtist.toString() !== update.artist)
+    ) {
+      try {
+        // Create a booking request for the new artist
+        await this.bookingsService.create(
+          {
+            artist: update.artist,
+            event: id,
+            status: BookingStatus.REQUESTED,
+            notes: `Booking request for ${event.artistSlots[slotIndex].role} role in event: ${event.title}`,
+          },
+          currentUser,
+        );
+      } catch (error) {
+        // If booking creation fails, revert the artist slot change
+        event.artistSlots[slotIndex].artist = previousArtist;
+        await event.save();
+        throw error;
+      }
+    }
+
+    return updatedEvent;
   }
 
   async removeArtistSlot(
@@ -485,7 +543,7 @@ export class EventsService {
     for (const slot of artistSlots) {
       if (slot.artist && !Types.ObjectId.isValid(slot.artist)) {
         throw new BadRequestException(
-          `Invalid artist ID format: ${slot.artist}. Artist ID must be a valid MongoDB ObjectId.`,
+          `Invalid artist ID format: ${slot.artist}.`,
         );
       }
     }
@@ -534,6 +592,26 @@ export class EventsService {
 
     // Add all artist slots
     event.artistSlots.push(...artistSlots);
+
+    return event.save();
+  }
+
+  async updateArtistSlotStatusOnly(
+    id: string,
+    slotIndex: number,
+    status: ArtistSlotStatus,
+  ): Promise<EventDocument> {
+    const event = await this.findOne(id);
+
+    // Check if the slot exists
+    if (!event.artistSlots[slotIndex]) {
+      throw new NotFoundException(
+        `Artist slot at index ${slotIndex} not found`,
+      );
+    }
+
+    // Update just the status
+    event.artistSlots[slotIndex].status = status;
 
     return event.save();
   }
